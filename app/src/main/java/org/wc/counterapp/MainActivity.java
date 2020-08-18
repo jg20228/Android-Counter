@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     //카운트 값을 계속 그리기 위해서 Handler추가
     private Handler handler = new Handler();
 
+    //
+    private int count=0;
+
     //Bind할때 파라미터 중간 넘어감
     ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -74,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this,CounterService.class);
-
-                
+                intent.putExtra("count",count);
+                running=true;
                 //이 밑에가 실행되야 binder가 활성화됨
                 bindService(intent, connection, BIND_AUTO_CREATE);
                 //쓰레드가 실행된다 = 컨텍스트 스위칭된다.
@@ -122,11 +125,22 @@ public class MainActivity extends AppCompatActivity {
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (running == false) {
+                    return;
+                }
                 Intent intent = new Intent(MainActivity.this, CounterService.class);
                 //stopService(intent); ->
                 unbindService(connection);
                 running=false;
+                try {
+                    count = binder.getCount();
+                    Log.d(TAG, "중지했더니 카운터값: "+count);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         });
+
+
     }
 }

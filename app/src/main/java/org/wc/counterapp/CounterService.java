@@ -2,6 +2,7 @@ package org.wc.counterapp;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -23,12 +24,15 @@ public class CounterService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.count = intent.getIntExtra("count",100);
+        Log.d(TAG, "onBind: 실행됨 : "+count);
         return binder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind: count : "+count);
+        intent.putExtra("count",count);
         isStop=true;
         return super.onUnbind(intent);
     }
@@ -56,7 +60,7 @@ public class CounterService extends Service {
     class Counter implements Runnable{
         @Override
         public void run() {
-            for (count=0;count<20;count++){
+            for (count=count;count<20;count++){
                 if(isStop){
                     break;
                 }
