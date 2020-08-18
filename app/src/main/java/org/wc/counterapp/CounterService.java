@@ -3,6 +3,7 @@ package org.wc.counterapp;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 
 public class CounterService extends Service {
@@ -11,21 +12,40 @@ public class CounterService extends Service {
     private int count;
     private boolean isStop=false;
 
+
+    //메인액티비티에서 binder.getCount하면 여기 값에 접근 가능
+    ICounterService.Stub binder = new ICounterService.Stub() {
+        @Override
+        public int getCount() throws RemoteException {
+            return count;
+        }
+    };
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "onUnbind: count : "+count);
+        isStop=true;
+        return super.onUnbind(intent);
+    }
+
     public CounterService() {
+        Log.d(TAG, "CounterService: 생성자 실행됨");
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "onCreate: 서비스 시작");
         Thread counterThread = new Thread(new Counter());
         counterThread.start();
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
+
 
     @Override
     public void onDestroy() {
@@ -37,7 +57,6 @@ public class CounterService extends Service {
         @Override
         public void run() {
             for (count=0;count<20;count++){
-
                 if(isStop){
                     break;
                 }
